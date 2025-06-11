@@ -1,9 +1,10 @@
 import grpc
-import kvstore_pb2, kvstore_pb2_grpc
+import kvstore_pb2
+import kvstore_pb2_grpc
 
 def run():
     channel = grpc.insecure_channel('localhost:50051')
-    stub   = kvstore_pb2_grpc.KVStoreStub(channel)
+    stub = kvstore_pb2_grpc.KVStoreStub(channel)
 
     # Prueba de set/get
     stub.set(kvstore_pb2.KeyValue(key='foo', value='bar'))

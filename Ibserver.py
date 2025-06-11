@@ -1,6 +1,7 @@
 from concurrent import futures
 import grpc
-import kvstore_pb2, kvstore_pb2_grpc
+import kvstore_pb2
+import kvstore_pb2_grpc
 
 class KVStoreServicer(kvstore_pb2_grpc.KVStoreServicer):
     def __init__(self):
@@ -19,14 +20,14 @@ class KVStoreServicer(kvstore_pb2_grpc.KVStoreServicer):
 
     def getPrefix(self, request, context):
         self.stats['getprefixes'] += 1
-        vals = [v for k,v in self.store.items() if k.startswith(request.prefixKey)]
+        vals = [v for k, v in self.store.items() if k.startswith(request.prefixKey)]
         return kvstore_pb2.GetPrefixResponse(values=vals)
 
     def stat(self, request, context):
         return kvstore_pb2.StatResponse(
-          total_sets=self.stats['sets'],
-          total_gets=self.stats['gets'],
-          total_getprefixes=self.stats['getprefixes']
+            total_sets=self.stats['sets'],
+            total_gets=self.stats['gets'],
+            total_getprefixes=self.stats['getprefixes']
         )
 
 def serve():
