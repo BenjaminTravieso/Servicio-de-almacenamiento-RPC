@@ -4,9 +4,16 @@ import kvstore_pb2
 import kvstore_pb2_grpc
 import os, io
 import threading
+import sys
 
+# --- Configuración para la ubicación del log ---
+if getattr(sys, 'frozen', False):
+    # Si se ejecuta como ejecutable (congelado), obtener la carpeta del ejecutable.
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    # En desarrollo, la carpeta será donde se encuentra este script.
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(BASE_DIR, "kvstore_data.log")
 
 
