@@ -3,6 +3,8 @@ import grpc
 import kvstore_pb2
 import kvstore_pb2_grpc
 import os, io
+import threading
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(BASE_DIR, "kvstore_data.log")
@@ -14,6 +16,7 @@ class KVStoreServicer(kvstore_pb2_grpc.KVStoreServicer):
         self.stats  = {'sets': 0, 'gets': 0, 'getprefixes': 0}
         self.log_file = LOG_FILE
         self._ensure_log_and_load()
+        self._log_lock = threading.Lock() 
 
     # ----------  DURABILIDAD  ----------
     def _ensure_log_and_load(self):
@@ -34,8 +37,17 @@ class KVStoreServicer(kvstore_pb2_grpc.KVStoreServicer):
         print(f"🗂  Estado reconstruido: {len(self.store)} claves cargadas.")
 
     def _append_to_log(self, key, value):
-        with open(self.log_file, "a", encoding="utf-8") as f:
-            f.write(f"SET|{key}|{value}\n")
+        """
+        Escribe la línea SET|key|value al final del archivo de log
+        de forma atómica para todos los hilos.
+        """
+        line = f"SET|{key}|{value}\n"
+        with self._log_lock:                   #  ← NUEVO
+            with open(self.log_file, "a", encoding="utf-8") as f:
+                f.write(line)
+                f.flush()
+                os.fsync(f.fileno())           # fuerza a disco (durabilidad real)
+
 
     # ----------  RPCs  ----------
     def set(self, request, context):
